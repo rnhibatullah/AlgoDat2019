@@ -1,0 +1,4 @@
+management.c bei dem muss orders_in nicht abgesichert da wir das schon in order.c gemacht haben 
+bei order.c get func müssen wir halt order_in absichern 
+bei warehouse.c muss halt die condition beachten, dass lock_warehouse gibt signal zu deposit_xxx
+xxx = Zutaten sodass sie beenden kann(die condition bei deposit falls amount_zutaten == MAX_Store_CAPACITY dann warte einfach auf ein Signal von lock_warehouse bis das warehouse schon eine frei Platz schon
