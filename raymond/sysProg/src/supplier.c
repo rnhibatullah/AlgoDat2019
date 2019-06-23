@@ -12,13 +12,13 @@ struct forwarding_agent{
     
     int stop_suppliers;
     //TODO  
-    pthread_mutex_t sugar_supplier_m;
-    pthread_mutex_t flour_supplier_m;
-    pthread_mutex_t chocolate_supplier_m;
-    pthread_cond_t chocolate_supplier_s;
-    pthread_cond_t sugar_supplier_s;
-    pthread_cond_t flour_supplier_s;
-    pthread_mutex_t supplier_stop;
+    //pthread_mutex_t sugar_supplier_m;
+    //pthread_mutex_t flour_supplier_m;
+    //pthread_mutex_t chocolate_supplier_m;
+    //pthread_cond_t chocolate_supplier_s;
+    //pthread_cond_t sugar_supplier_s;
+    pthread_cond_t supplier_stop_s;
+    pthread_mutex_t supplier_stop_m;
 };
 
 //FUNCTIONS CALLED BY BAKERY
@@ -33,10 +33,10 @@ forwarding_agent* forwarding_agent_create(warehouse* wh){
     
     new_fa->stop_suppliers = 0;
     //TODO
-    pthread_mutex_init(&new_fa->supplier_stop, NULL);
-    pthread_mutex_init(&new_fa->sugar_supplier_m, NULL);
-    pthread_mutex_init(&new_fa->flour_supplier_m, NULL);
-    pthread_mutex_init(&new_fa->chocolate_supplier_m, NULL);
+    pthread_mutex_init(&new_fa->supplier_stop_m, NULL);
+    //pthread_mutex_init(&new_fa->sugar_supplier_m, NULL);
+    //pthread_mutex_init(&new_fa->flour_supplier_m, NULL);
+    //pthread_mutex_init(&new_fa->chocolate_supplier_m, NULL);
     return new_fa;
     
 }
@@ -52,34 +52,37 @@ void* forwarding_agent_working(void* forward_agent){
     //create
     //while wait 
     //do ur thing
-    pthread_mutex_lock(&fa->sugar_supplier_m);
-    while(fa->stop_suppliers){
+    pthread_mutex_lock(&fa->supplier_stop_m);
+    //while(fa->stop_suppliers){
         //pthread_mutex_unlock(&fa->sugar_supplier_m);
-        pthread_cond_wait(&fa->sugar_supplier_s, &fa->sugar_supplier_m);
+        //pthread_cond_wait(&fa->sugar_supplier_s, &fa->sugar_supplier_m);
         //pthread_mutex_lock(&fa->sugar_supplier_m);
-    }
+    //}
     //pthread_mutex_lock(&fa->sugar_supplier_m);
     pthread_create(&sugar_supplier_thread,NULL,deliver_sugar,fa->sugar_supplier);
-    pthread_mutex_unlock(&fa->sugar_supplier_m);
+    //pthread_mutex_unlock(&fa->sugar_supplier_m);
     //pthread_mutex_unlock(&fa->sugar_supplier_m);
 
-    pthread_mutex_lock(&fa->flour_supplier_m);
-    while(!fa->stop_suppliers){
+    //pthread_mutex_lock(&fa->flour_supplier_m);
+    //while(!fa->stop_suppliers){
         //pthread_mutex_unlock(&fa->flour_supplier_m);
-        pthread_cond_wait(&fa->flour_supplier_s, &fa->flour_supplier_m);
+   //     pthread_cond_wait(&fa->flour_supplier_s, &fa->flour_supplier_m);
         //pthread_mutex_lock(&fa->flour_supplier_m);
-    }
+    //}
 
     pthread_create(&flour_supplier_thread,NULL,deliver_flour,fa->flour_supplier);
-    pthread_mutex_unlock(&fa->flour_supplier_m);
+    //pthread_mutex_unlock(&fa->flour_supplier_m);
 
-    pthread_mutex_lock(&fa->chocolate_supplier_m);
-    while(!fa->stop_suppliers){
+    //pthread_mutex_lock(&fa->chocolate_supplier_m);
+    //while(!fa->stop_suppliers){
         //pthread_mutex_unlock(&fa->chocolate_supplier_m);
-        pthread_cond_wait(&fa->chocolate_supplier_s, &fa->chocolate_supplier_m);
-    }
+      //  pthread_cond_wait(&fa->chocolate_supplier_s, &fa->chocolate_supplier_m);
+    //}
     pthread_create(&choclate_supplier_thread,NULL,deliver_choclate, fa->choclate_supplier);
-    pthread_mutex_unlock(&fa->chocolate_supplier_m);
+    while(!fa->stop_suppliers){
+        pthread_cond_wait(&fa->supplier_stop_s, &fa->supplier_stop_m);
+    }
+    pthread_mutex_unlock(&fa->supplier_stop_m);
     
     end_job(fa->sugar_supplier);
     end_job(fa->flour_supplier);
@@ -98,20 +101,19 @@ void* forwarding_agent_working(void* forward_agent){
 //FUNCTIONS CALLED BY MANAGEMENT
 void stop_forwarding_agent(forwarding_agent* fa){
     //TODO
-    pthread_mutex_lock(&fa->supplier_stop);
+    pthread_mutex_lock(&fa->supplier_stop_m);
     fa->stop_suppliers = 1;
-    pthread_cond_signal(&fa->chocolate_supplier_s);
-    pthread_cond_signal(&fa->sugar_supplier_s);
-    pthread_cond_signal(&fa->flour_supplier_s);
-    pthread_mutex_unlock(&fa->supplier_stop);
+    pthread_cond_signal(&fa->supplier_stop_s);
+    pthread_mutex_unlock(&fa->supplier_stop_m);
 }
 
 void forwarding_agent_destroy(forwarding_agent* fa){
     //TODO    
-    pthread_mutex_destroy(&fa->sugar_supplier_m);
+    /*pthread_mutex_destroy(&fa->sugar_supplier_m);
     pthread_mutex_destroy(&fa->flour_supplier_m);
-    pthread_mutex_destroy(&fa->chocolate_supplier_m);
-    pthread_mutex_destroy(&fa->supplier_stop);
+    pthread_mutex_destroy(&fa->chocolate_supplier_m);*/
+    pthread_mutex_destroy(&fa->supplier_stop_m);
+    pthread_cond_destroy(&fa->supplier_stop_s);
     free(fa);
 }
 //////////////////////////////////////////////////////////////////////////////

@@ -62,7 +62,7 @@ warehouse* warehouse_create(){
 
 unsigned int get_choclate(unsigned int amount, warehouse* wh){
     pthread_mutex_lock(&wh->anzahl_chocolate);
-    while(wh->choclate == 0 && wh->locked){
+    while(wh->choclate == 0 || wh->locked){
         //pthread_mutex_unlock(&wh->anzahl_chocolate);
         pthread_cond_wait(&wh->sig_get_choc, &wh->anzahl_chocolate);
         //pthread_mutex_lock(&wh->anzahl_chocolate);
@@ -82,7 +82,7 @@ unsigned int get_flour(unsigned int amount, warehouse* wh){
     
     //TODO
     pthread_mutex_lock(&wh->anzahl_flour);
-    while(wh->flour == 0 && wh->locked){
+    while(wh->flour == 0 || wh->locked){
         //pthread_mutex_unlock(&wh->anzahl_flour);
         pthread_cond_wait(&wh->sig_get_flour, &wh->anzahl_flour);
         //pthread_mutex_lock(&wh->anzahl_flour);
@@ -101,12 +101,12 @@ unsigned int get_sugar(unsigned int amount, warehouse* wh){
     
     //TODO
     pthread_mutex_lock(&wh->anzahl_sugar);
-    while(wh->sugar == 0 && wh->locked){
+    while(wh->sugar == 0 || wh->locked){
         //pthread_mutex_unlock(&wh->anzahl_sugar);
         pthread_cond_wait(&wh->sig_get_sugar, &wh->anzahl_sugar);
         //pthread_mutex_lock(&wh->anzahl_sugar);
     }
-    //pthread_mutex_lock(&wh->anzahl_taken_sugar);
+    pthread_mutex_lock(&wh->anzahl_taken_sugar);
     wh->sugar_taken += amount;
     pthread_mutex_unlock(&wh->anzahl_taken_sugar);
     wh->sugar -= amount;
@@ -122,7 +122,7 @@ unsigned int get_sugar(unsigned int amount, warehouse* wh){
 void deposit_choclate(unsigned int amount, warehouse* wh){
     //TODO
     pthread_mutex_lock(&wh->anzahl_chocolate);
-    while(wh->choclate + amount > MAX_STORE_CAPACITY && wh->locked){
+    while(wh->choclate + amount > MAX_STORE_CAPACITY || wh->locked){
         pthread_cond_wait(&wh->sig_dep_choc, &wh->anzahl_chocolate);
     }
     if(wh->choclate + amount > MAX_STORE_CAPACITY){
@@ -139,7 +139,7 @@ void deposit_choclate(unsigned int amount, warehouse* wh){
 void deposit_sugar(unsigned int amount, warehouse* wh){
     //TODO
     pthread_mutex_lock(&wh->anzahl_sugar);
-    while(wh->sugar + amount > MAX_STORE_CAPACITY && wh->locked){
+    while(wh->sugar + amount > MAX_STORE_CAPACITY || wh->locked){
         pthread_cond_wait(&wh->sig_dep_sugar, &wh->anzahl_sugar);
     }
     if(wh->sugar + amount > MAX_STORE_CAPACITY){
@@ -155,7 +155,7 @@ void deposit_sugar(unsigned int amount, warehouse* wh){
 void deposit_flour(unsigned int amount, warehouse* wh){
     //TODO
     pthread_mutex_lock(&wh->anzahl_flour);
-    while(wh->flour + amount > MAX_STORE_CAPACITY && wh->locked){
+    while(wh->flour + amount > MAX_STORE_CAPACITY || wh->locked){
         pthread_cond_wait(&wh->sig_dep_flour, &wh->anzahl_flour);
     }
     if(wh->flour + amount > MAX_STORE_CAPACITY){
