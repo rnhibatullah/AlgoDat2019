@@ -1,0 +1,10 @@
+TU-Berlin;2
+HU-Berlin;31
+FU-Berlin;31
+Studierendenwerk;31
+baeckerei1;31
+baeckerei2;2
+baeckerei3;31
+baeckerei4;31
+baeckerei5;31
+
