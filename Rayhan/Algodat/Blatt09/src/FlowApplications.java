@@ -1,7 +1,4 @@
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Set;
-import java.util.Stack;
+import java.util.*;
 
 
 public class FlowApplications {
@@ -108,38 +105,13 @@ public class FlowApplications {
         }
 
         /*
-        FordFulkerson newFordFullkerson = new FordFulkerson(newFlowGraph,s,t);
 
-        LinkedList allPossibleEdges = new LinkedList();
+
+
 
         LinkedList paths = new LinkedList();
 
-        //search all possible dge in flow network
-        for (FlowEdge edge: newFlowGraph.edges()) {
-            allPossibleEdges.add(edge);
 
-        }
-
-
-        //search the adj from source
-        for (FlowEdge e: newFlowGraph.adj(s)) {
-            if (e.flow()==1){
-                LinkedList<Integer> path = new LinkedList();
-                while (e.to() !=t && e.flow()==1){
-                    for (FlowEdge e1: newFlowGraph.adj(e.to())) {
-                        path.add(e.from());
-                        e = e1;
-                        allPossibleEdges.remove(e);
-                    }
-
-                    paths.add(path);
-                }
-            }else{
-                continue;
-            }
-
-
-        }
 
         bagEdgeDisjointPaths.add(paths);
 
@@ -199,8 +171,125 @@ public class FlowApplications {
 
     public static boolean isUnique(FlowNetwork flowNetworkIn, int s, int t) {
         // TODO
+        boolean start[] = new boolean[flowNetworkIn.V()];
+        boolean end[] = new boolean[flowNetworkIn.V()];
+
+        int counter =0;
+        FordFulkerson newFordfulkerson = new FordFulkerson(flowNetworkIn,s,t);
+
+        for (int i = 0; i <flowNetworkIn.V() ; i++) {
+
+
+            if(i==t)
+                continue;
+
+            for (FlowEdge edge: flowNetworkIn.adj(i)) {
+                System.out.println(edge.toString());
+
+            }
+
+
+        }
+
+
+
+        for (int i = 0; i <flowNetworkIn.V() ; i++) {
+            start[i] = newFordfulkerson.inCut(i);
+        }
+
+        LinkedList queue = new LinkedList();
+        for (FlowEdge r: flowNetworkIn.adj(t)) {
+            queue.add(r.to());
+        }
+
+
+        for (FlowEdge d: flowNetworkIn.adj(t)) {
+            counter++;
+        }
+
+        LinkedList<FlowEdge> marked_edge = new LinkedList<>();
+        //System.out.println(queue);
+        for(int i =0;i <counter; i++){
+            int v = t;
+            for (FlowEdge e: flowNetworkIn.adj(v)) {
+                System.out.println("e from : "+e.from());
+                System.out.println(marked_edge);
+                if(!marked_edge.contains(e)){
+                    marked_edge.add(e);
+                    System.out.println("rest : " + (e.capacity()-e.flow()));
+                    if (e.capacity()-e.flow() >0){
+
+                        end[e.from()] = true;
+                        System.out.println("v : "+v);
+                        v= e.from();
+                        System.out.println("e.from : "+v);
+                        System.out.println("e.other : "+e.other(v));
+                        System.out.println("----------------------");
+
+
+                    }else {
+                        System.out.println("else");
+                        System.out.println("----------------------");
+                    }
+
+                }
+                else{
+                    continue;
+                }
+
+            }
+        }
+
+        for (int i = 0; i <flowNetworkIn.V() ; i++) {
+            System.out.println(start[i]);
+            System.out.println("-----------"+end[i]);
+        }
+
+        for (int i = 0; i <flowNetworkIn.V() ; i++) {
+            if (start[i]!=end[i]){
+                return false;
+            }
+
+        }
+/*
+
+        FlowNetwork reverse = new FlowNetwork(flowNetworkIn.V());
+
+        for (int v=0; v<flowNetworkIn.V(); v++) {
+            if (v==t) continue;
+            for (FlowEdge edge: flowNetworkIn.adj(v)) {
+
+                FlowEdge addE = new FlowEdge(edge.to(), edge.from(), edge.capacity(), edge.flow());
+                System.out.println("from : "+addE.from());
+                System.out.println("to : "+addE.to());
+                System.out.println("flow:"+addE.flow());
+                System.out.println("cap:"+addE.capacity());
+                System.out.println("--------------------");
+                reverse.addEdge(addE);
+            }
+        }
+
+        for (int i = 0; i <start.length ; i++) {
+            start[i] = newFordfulkerson.inCut(i);
+            System.out.println(start[i]);
+        }
+
+        FordFulkerson reverseFord = new FordFulkerson(reverse,t,s);
+
+        for (int i = 0; i <end.length ; i++) {
+            end[i]= reverseFord.inCut(i);
+            System.out.println("---------------"+end[i]);
+        }
+
+        for (int i = 0; i <flowNetworkIn.V() ; i++) {
+            boolean isuni = end[i]!=start[i];
+            if (isuni) return false;
+        }
+
+*/
 
         return true;
+        //return true;
     }
 
 
@@ -217,14 +306,63 @@ public class FlowApplications {
 
     public static LinkedList<Integer> findBottlenecks(FlowNetwork flowNetwork, int s, int t) {
         // TODO
-
+        if (isUnique(flowNetwork,s,t)){
+            throw new IllegalArgumentException("Flownetwork in bottle neck falsch");
+        }
         LinkedList findBottle = new LinkedList();
+        FlowNetwork cloneFlow= cloneFlowNetwork(flowNetwork);
+
+        /*
+        FordFulkerson newFordFullkerson = new FordFulkerson(flowNetwork,s,t);
+
+        LinkedList allPossibleEdges = new LinkedList();
+
+        //search all possible dge in flow network
+        for (FlowEdge edge: flowNetwork.edges()) {
+            allPossibleEdges.add(edge);
+
+        }
+
+
+        //search the adj from source
+        for (FlowEdge e: flowNetwork.adj(s)) {
+            if (newFordFullkerson.inCut(e.to())){
+                LinkedList<Integer> path = new LinkedList();
+                while (e.to() !=t && e.flow()==1){
+                    for (FlowEdge e1: flowNetwork.adj(e.to())) {
+                        path.add(e.from());
+                        e = e1;
+                        allPossibleEdges.remove(e);
+                    }
+
+                    //paths.add(path);
+                }
+            }else{
+                continue;
+            }
+
+
+        }
+    */
+        int[]  out = new int[flowNetwork.V()];
+        FordFulkerson newFordFullkerson = new FordFulkerson(cloneFlow,s,t);
+        for (int i = 0; i <flowNetwork.V() ; i++) {
+            if (newFordFullkerson.inCut(i)){
+                for(FlowEdge edge: flowNetwork.adj(i) ){
+                    if (findBottle.contains(edge.to())){
+                        continue;
+                    }
+                    findBottle.add(edge);
+                }
+
+            }
+        }
 
         return findBottle;
     }
 
     public static void main(String[] args) {
-
+/*
         // Test for Task 2.1 and 2.2 (useful for debugging!)
         Graph graph = new Graph(new In("src/Graph1.txt"));
         int s = 0;
@@ -239,20 +377,24 @@ public class FlowApplications {
     }
 
 
+*/
 
-/*
         // Example for Task 3.1 and 3.2 (useful for debugging!)
-        FlowNetwork flowNetwork = new FlowNetwork(new In("Flussgraph1.txt"));
+        FlowNetwork flowNetwork = new FlowNetwork(new In("Flussgraph2.txt"));
         int s = 0;
         int t = flowNetwork.V() - 1;
         boolean unique = isUnique(flowNetwork, s, t);
         System.out.println("Is mincut unique? " + unique);
         // Flussgraph1 is non-unique, so findBottlenecks() should be tested with Flussgraph2
+        /*
         flowNetwork = new FlowNetwork(new In("Flussgraph2.txt"));
+        boolean unique1 = isUnique(flowNetwork, s, t);
+        System.out.println("Is mincut unique1? " + unique1);
         LinkedList<Integer> bottlenecks = findBottlenecks(flowNetwork, s, t);
         System.out.println("Bottlenecks: " + bottlenecks);
 */
-    }
+    }}
+
 
 
 
