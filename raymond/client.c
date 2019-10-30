@@ -29,7 +29,7 @@ void *get_in_addr(struct sockaddr *sa)
 
 int main(int argc, char *argv[])
 {
-    //char *PORT = argv[2];
+    char *PORT = argv[2];
     int sockfd, numbytes;
     char buf[MAXDATASIZE];
     struct addrinfo hints, *servinfo, *p;
@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
     hints.ai_family = AF_UNSPEC;
     hints.ai_socktype = SOCK_STREAM;
 
-    if ((rv = getaddrinfo(argv[1], argv[2], &hints, &servinfo)) != 0) {
+    if ((rv = getaddrinfo(argv[1], PORT, &hints, &servinfo)) != 0) {
         fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
         return 1;
     }
@@ -78,12 +78,15 @@ int main(int argc, char *argv[])
 
     freeaddrinfo(servinfo); // all done with this structure
 
+    FILE *fp = fopen("file.txt","w");
     while((numbytes = recv(sockfd, buf, MAXDATASIZE - 1, 0)) > 0) {
         if (numbytes == -1) {
             perror("recv");
             exit(1);
         }
-        fwrite(buf,1,MAXDATASIZE,stdout);
+
+        fwrite(buf,1,numbytes,stdout);
+        fwrite(buf,1,numbytes,fp);
     }
 
     //buf[numbytes] = '\0';
@@ -94,6 +97,7 @@ int main(int argc, char *argv[])
     /*FILE *fp = fopen("file.txt","w");
     fwrite(buf,1,MAXDATASIZE,fp);
     fclose(fp);*/
+    fclose(fp);
     close(sockfd);
 
     return 0;
